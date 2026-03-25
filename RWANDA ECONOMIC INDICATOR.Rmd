@@ -1,0 +1,262 @@
+---
+title: "Economic Trends in Rwanda (2001–2024): Analysis Using World Bank Indicators and R"
+author: "Benjamin BAHIZI SEBUJISHO"
+date: "2026-03-16"
+output: pdf_document
+---
+
+```{r}
+DATASET<-read.csv("C:/Users/user/Documents/!DATA ANALYTICS/R Programming/DATASETS/RWANDA_World_Development_Indicators/RWANDA_economic_indicator.csv")
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(corrplot)
+library(ggcorrplot)
+library(car)
+```
+
+
+
+```{r}
+#UNDERSTANDING THE  DATASET
+str(DATASET)
+summary(DATASET)
+sapply(DATASET, class)
+names(DATASET)
+nrow(DATASET)
+ncol(DATASET)
+```
+```{r}
+#CLEANING DATASET
+#cheking the missing values
+sum(is.na(DATASET))
+```
+
+```{r}
+#MISSING VALUES
+Clean_Dataset<- DATASET
+Clean_Dataset
+Clean_Dataset[Clean_Dataset ==".."]<-NA
+# Note on missing values:
+# Some indicators from the World Bank World Development Indicators dataset
+# contain missing observations for earlier years. Removing all NA values using
+# na.omit() would drop several years (2001–2013) from the dataset.
+# Therefore, missing values are kept to maintain the complete time series
+# for Rwanda from 2001–2024.
+
+```
+
+
+```{r}
+#REMOVING Unnecessary Columns :"Country.Code","Time.Code"
+
+Clean_Dataset<-Clean_Dataset[, !(names(Clean_Dataset) %in% c("Country.Code","Time.Code"))]
+Clean_Dataset
+
+```
+
+
+```{r}
+#RENAMING COLUMN 
+
+Clean_Dataset<-Clean_Dataset %>% 
+  rename(Country=Country.Name,
+          Year=Time,
+          GDP=`GDP..constant.2015.US....NY.GDP.MKTP.KD.`,
+          GDP_growth_rate=`GDP.growth..annual.....NY.GDP.MKTP.KD.ZG.`,
+          Inflation=`Inflation..consumer.prices..annual.....FP.CPI.TOTL.ZG.`,
+          Population=`Population..total..SP.POP.TOTL.`,
+          Unemployment_rate=`Unemployment..total....of.total.labor.force...modeled.ILO.estimate...SL.UEM.TOTL.ZS.`,
+          Exports=`Exports.of.goods.and.services....of.GDP...NE.EXP.GNFS.ZS.`,
+          Imports=`Imports.of.goods.and.services....of.GDP...NE.IMP.GNFS.ZS.`,
+          `Trade(% of GDP)`=`Trade....of.GDP...NE.TRD.GNFS.ZS.`,
+          Government_Expenditure=`General.government.final.consumption.expenditure....of.GDP...NE.CON.GOVT.ZS.`,
+          Tax_revenue=`Tax.revenue....of.GDP...GC.TAX.TOTL.GD.ZS.`,
+          Current_account_balance=`Current.account.balance....of.GDP...BN.CAB.XOKA.GD.ZS.`,
+          Foreign_Direct_Investment=`Foreign.direct.investment..net.inflows....of.GDP...BX.KLT.DINV.WD.GD.ZS.`,
+          Broad_Money_supply=`Broad.money....of.GDP...FM.LBL.BMNY.GD.ZS.`,
+          Domestic_credit_of_private_sector=`Domestic.credit.to.private.sector....of.GDP...FS.AST.PRVT.GD.ZS.`,
+          Exchange_rate=`Official.exchange.rate..LCU.per.US...period.average...PA.NUS.FCRF.`,
+          Gross_capital_formation=`Gross.capital.formation....of.GDP...NE.GDI.TOTL.ZS.`
+        )
+
+names(Clean_Dataset)
+
+```
+```{r}
+#Converting variables to numeric
+
+Clean_Data<-Clean_Dataset %>%
+  filter(Country=="Rwanda") %>%
+  filter(Year >= 2001 & Year <= 2024) %>%
+  mutate(across(-Country, as.numeric))
+str(Clean_Data)
+
+```
+```{r}
+#Exploratory Data Analysis (EDA)
+
+# 1. How has GDP growth changed since 2001?
+
+ggplot(Clean_Data, aes(x=Year, y=GDP_growth_rate))+
+         geom_line(color= "blue", size=2)+
+         geom_point(color="darkblue", size=2)+
+         labs(title = "GDP Growth Rate in Rwanda (2001–2024)",
+              x="Year",
+              y="GDP Growth Rate (%)") +
+        theme_minimal()
+
+#Rwanda’s GDP growth shows a strong upward trend since 2001, reflecting rapid economic development. The country experienced high growth rates particularly after 2005 due to improvements in infrastructure, investment, and economic reforms. However, some years show slowdowns linked to global economic conditions and domestic shocks.
+
+
+```
+
+```{r}
+#2. What happened during economic shocks?
+
+ggplot(Clean_Data, aes(x=Year,y=GDP_growth_rate))+
+  geom_line(color="blue",size=2)+
+  geom_point(color="blue", size=2)+
+  geom_vline(xintercept = 2008,linetype="dashed",color="red")+
+  geom_vline(xintercept = 2020,linetype="dashed",color="red")+
+  annotate("text", x=2020, y=5, label="COVID-19 Shock", color="red")+
+  labs(title = "GDP Growth and Economic Shocks in Rwanda",
+       x="Year",
+       y="GDP Growth Rate (%)")+
+  theme_minimal()
+
+#Rwanda’s economic growth slowed during global shocks. The 2008 financial crisis caused moderate reductions in growth, while the COVID-19 pandemic in 2020 produced a sharper decline due to disruptions in tourism, trade, and domestic economic activity.
+
+```
+
+```{r}
+#Is inflation stable?
+
+ggplot(Clean_Data, aes(x=Year,y=Inflation))+
+  geom_line(color="lightblue",size=2)+
+  geom_point(color="blue")+
+  labs(title = "Inflation Rate in Rwanda (2001–2024)",
+       x="Year",
+       y="Inflation (%)")+
+  theme_minimal()
+
+```
+
+```{r}
+#Rwanda’s inflation has generally been low and stable, with some fluctuations. The country has maintained single-digit inflation rates, which is positive for economic stability. However, occasional spikes may reflect supply shocks or changes in global commodity prices.
+```
+
+
+```{r}
+#Correlation Analysis
+cor_matrix <- Clean_Data %>%
+  select(GDP_growth_rate, Inflation, Exports, Imports, Unemployment_rate) %>%
+  cor(use = "complete.obs")
+
+cor_matrix
+
+
+
+```
+
+```{r}
+#Visualize the correlation matrix
+library(ggcorrplot)
+
+ggcorrplot(cor_matrix, 
+           lab = TRUE,
+           colors = c("blue", "white", "red"),
+           title = "Correlation Between Macroeconomic Variables")
+```
+
+
+
+
+```{r}
+#The correlation results show that most variables have weak relationships with GDP growth, meaning that economic growth is influenced by many factors rather than one main variable.
+
+#Inflation has a weak negative relationship with growth, while exports and imports do not show a strong effect on GDP growth.
+
+#A very strong positive relationship exists between exports and imports, showing that trade activities are closely connected and that exports depend on imports.
+
+#The relationship between GDP growth and unemployment is weak, suggesting that economic growth does not clearly lead to job creation.
+
+#Correlation does not imply causation.
+
+```
+
+
+
+```{r}
+#Regression Analysis
+model<-lm(GDP_growth_rate~Inflation + Exports+ Imports +Unemployment_rate, data = Clean_Data )
+model
+```
+```{r}
+#Multicollinearity Check
+
+vif(model)
+  #multicollinearity analysis revealed that Exports and Imports were highly correlated (VIF > 6). To improve model stability and interpretability, I removed Imports from the regression. This adjustment reduced variance inflation and allowed clearer insights into the drivers of Rwanda’s GDP growth.
+```
+```{r}
+#Revised Regression Model after removing Imports
+model<-lm(GDP_growth_rate~Inflation + Exports+Unemployment_rate, data = Clean_Data )
+model
+```
+
+```{r}
+#Regression Results
+summary(model)
+```
+
+```{r}
+#Using World Bank World Development Indicators, I built a regression model to study Rwanda’s GDP growth. The analysis showed that inflation, exports, and unemployment do not have statistically significant effects on GDP growth. The model explained only about 6% of the variation, meaning most of Rwanda’s growth is driven by other factors not included here ,such as investment, aid, government spending, infrastructure, and external shocks. This project demonstrates skills in regression modeling, multicollinearity checks, and critical interpretation of results.
+
+#Overall, the analysis highlights that economic growth is complex and cannot be explained by a few simple indicators. A wide range of structural and external factors must be considered when studying development trends in Rwanda.
+
+
+#
+```
+
+
+
+
+
+```{r}
+
+#Trend Comparison
+
+
+Clean_Data_long <- Clean_Data %>%
+  select(Year, GDP_growth_rate, Inflation, `Trade(% of GDP)`) %>%
+  pivot_longer(-Year, names_to = "Indicator", values_to = "Value")
+
+ggplot(Clean_Data_long, aes(x=Year, y=Value, color=Indicator)) +
+  geom_line(size=1.2) +
+  labs(title="Economic Indicators in Rwanda",
+       y="Value",
+       x="Year") +
+  theme_minimal()
+  
+```
+
+
+```{r}
+
+#The trend comparison shows that Rwanda’s GDP growth has generally increased over time, while inflation has fluctuated but remained relatively low. Trade as a share of GDP has steadily risen, reflecting Rwanda’s growing integration into the global economy. However, these trends do not show direct cause-and-effect relationships, and other structural and external factors also contribute to Rwanda’s economic growth.
+```
+
+
+
+
+```{r}
+# Save cleaned dataset
+write.csv(Clean_Data, "C:/Users/user/Documents/!DATA ANALYTICS/R Programming/DATASETS/RWANDA_World_Development_Indicators/cleaned_data.csv", row.names = FALSE)
+```
+
+
+
+
