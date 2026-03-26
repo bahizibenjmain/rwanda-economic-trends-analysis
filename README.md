@@ -186,3 +186,14 @@ Data Analyst | Economist | R Programmer
 ## 💡 Project Value
 
 This project demonstrates the ability to transform raw economic data into meaningful insights using statistical and analytical tools—skills essential for roles in **data analysis, development economics, and policy research**.
+
+
+
+<img width="525" height="324" alt="000009" src="https://github.com/user-attachments/assets/0d190bc7-48fb-4fa6-992c-350a82ee5257" />
+<img width="525" height="324" alt="000016" src="https://github.com/user-attachments/assets/7d0f82b7-b6bf-4340-9c8e-45b5a916c746" />
+<img width="525" height="324" alt="00000a" src="https://github.com/user-attachments/assets/100bbcdc-33f4-4a24-a8d1-8102fa22a2e6" />
+<img width="525" height="324" alt="000025" src="https://github.com/user-attachments/assets/1517c6a3-5c31-472c-81f2-9b87671c4b7f" />
+
+
+
+
