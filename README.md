@@ -177,6 +177,8 @@ These trends highlight:
 Data Analyst | Economist | R Programmer
 
 🔗 LinkedIn: https://www.linkedin.com/in/bahizi-sebujisho-benjamin-897b062a6/
+
+
 🔗 GitHub: https://github.com/bahizibenjmain
 
 ---
